@@ -407,16 +407,15 @@
 
 <script>
 // ─── CONFIGURE THESE ─────────────────────────────────────────────────────────
-const REPO_OWNER = 'iitmotorsports';
-const REPO_NAME  = 'Documentation-Site';
-const BRANCH     = 'main';
-// GitHub token needs: contents:write, pull-requests:write
-// Store this in a backend or environment variable — do NOT commit it to the repo!
-// For local dev you can paste it here, but remove before committing.
-const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN';
+const REPO_OWNER  = 'iitmotorsports';
+const REPO_NAME   = 'Documentation-Site';
+const BRANCH      = 'main';
+// Cloudflare Worker URL — token lives there, never in this file.
+// After deploying the worker, paste its URL here (no trailing slash).
+const WORKER_URL  = 'https://iitmotorsports-docs-proxy.aidanlhbaros.workers.dev';
 // ─────────────────────────────────────────────────────────────────────────────
 
-const API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
+const API = `${WORKER_URL}/repos/${REPO_OWNER}/${REPO_NAME}`;
 
 let selectedFile = null;
 let tags = [];
@@ -529,8 +528,6 @@ async function gh(path, method = 'GET', body = null) {
   const res = await fetch(`${API}${path}`, {
     method,
     headers: {
-      Authorization: `Bearer ${GITHUB_TOKEN}`,
-      Accept: 'application/vnd.github+json',
       'Content-Type': 'application/json',
     },
     body: body ? JSON.stringify(body) : null,
