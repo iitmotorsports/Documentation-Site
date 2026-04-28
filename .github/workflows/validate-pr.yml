@@ -1,0 +1,63 @@
+name: Validate PR
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate manifest
+        run: |
+          python3 << 'EOF'
+          import json, os, sys
+
+          VALID_EXTS = {'.pdf', '.md', '.docx', '.tex', '.latex'}
+          REQUIRED = ['filename', 'title', 'subsystem', 'year']
+
+          with open('manifest.json') as f:
+              manifest = json.load(f)
+
+          errors = []
+          manifest_files = set()
+
+          for i, doc in enumerate(manifest):
+              for field in REQUIRED:
+                  if field not in doc or doc[field] is None or str(doc[field]).strip() == '':
+                      errors.append(f"[entry {i}] Missing required field: {field}")
+
+              fname = doc.get('filename', '')
+              if fname:
+                  manifest_files.add(fname)
+                  ext = os.path.splitext(fname)[1].lower()
+                  if ext not in VALID_EXTS:
+                      errors.append(f"[entry {i}] Invalid file extension: '{ext}'")
+
+              year = doc.get('year')
+              if year is not None:
+                  try:
+                      y = int(year)
+                      if not (2000 <= y <= 2099):
+                          errors.append(f"[entry {i}] Year out of range: {year}")
+                  except (ValueError, TypeError):
+                      errors.append(f"[entry {i}] Year must be an integer, got: {year!r}")
+
+          docs_path = 'docs'
+          if os.path.isdir(docs_path):
+              disk_files = set(f for f in os.listdir(docs_path) if f != '.gitkeep')
+              for f in sorted(disk_files - manifest_files):
+                  errors.append(f"File in docs/ has no manifest entry: {f}")
+              for f in sorted(manifest_files - disk_files):
+                  errors.append(f"Manifest entry has no file in docs/: {f}")
+
+          if errors:
+              print("Manifest validation FAILED:")
+              for e in errors:
+                  print(f"  x {e}")
+              sys.exit(1)
+          else:
+              print(f"Manifest valid — {len(manifest)} document(s) OK")
+          EOF

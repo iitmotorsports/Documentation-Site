@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FSAE Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #141417;
+    --bg3: #1c1c21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f0ee;
+    --muted: #888885;
+    --accent: #e8ff47;
+    --accent2: #ff6b35;
+    --tag-bg: rgba(232,255,71,0.1);
+    --tag-text: #c8dd3a;
+    --red: #ff4545;
+    --blue: #4a9eff;
+    --radius: 8px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-badge {
+    background: var(--accent);
+    color: #0d0d0f;
+    font-size: 10px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    padding: 2px 6px;
+    border-radius: 3px;
+    letter-spacing: 0.05em;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn-upload {
+    background: var(--accent);
+    color: #0d0d0f;
+    border: none;
+    padding: 7px 16px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .btn-upload:hover { opacity: 0.85; }
+
+  /* LAYOUT */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 56px);
+  }
+
+  /* SIDEBAR */
+  aside {
+    border-right: 1px solid var(--border);
+    padding: 1.5rem 1rem;
+    position: sticky;
+    top: 56px;
+    height: calc(100vh - 56px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    margin-bottom: 1.75rem;
+  }
+
+  .sidebar-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 5px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.1s;
+  }
+  .filter-btn:hover { background: var(--bg3); color: var(--text); }
+  .filter-btn.active { background: var(--tag-bg); color: var(--accent); }
+
+  .filter-count {
+    font-size: 11px;
+    color: var(--muted);
+    background: var(--bg3);
+    padding: 1px 6px;
+    border-radius: 10px;
+  }
+  .filter-btn.active .filter-count { background: rgba(232,255,71,0.15); color: var(--tag-text); }
+
+  /* MAIN */
+  main {
+    padding: 1.5rem 2rem;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+
+  .search-wrap {
+    position: relative;
+    flex: 1;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 14px;
+    pointer-events: none;
+  }
+
+  input[type="search"] {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 12px 8px 36px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input[type="search"]:focus { border-color: var(--border2); }
+  input[type="search"]::placeholder { color: var(--muted); }
+
+  .view-toggle {
+    display: flex;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .view-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 8px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.1s;
+  }
+  .view-btn.active { background: var(--bg3); color: var(--text); }
+
+  .results-meta {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 1rem;
+  }
+
+  /* GRID VIEW */
+  .doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .doc-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    overflow: hidden;
+  }
+  .doc-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .doc-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .doc-card:hover::before { opacity: 1; }
+
+  .card-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .type-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-pdf { background: var(--red); }
+  .dot-md { background: var(--blue); }
+  .dot-docx { background: #9b72ff; }
+  .dot-tex { background: var(--accent2); }
+
+  .card-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .card-meta {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-meta-sep { opacity: 0.3; }
+
+  .card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .tag {
+    font-size: 11px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-family: var(--font-mono);
+  }
+
+  /* LIST VIEW */
+  .doc-list { display: flex; flex-direction: column; gap: 1px; }
+
+  .doc-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 120px 80px 100px;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: background 0.1s;
+    text-decoration: none;
+    color: inherit;
+  }
+  .doc-row:hover { background: var(--bg2); }
+
+  .doc-row .card-title { font-size: 13px; }
+
+  .list-header {
+    display: grid;
+    grid-template-columns: 28px 1fr 120px 80px 100px;
+    gap: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  /* EMPTY */
+  .empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--muted);
+  }
+  .empty-title { font-family: var(--font-head); font-size: 18px; color: var(--text); margin-bottom: 8px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 2rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    transform: translateY(8px);
+    transition: transform 0.2s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+
+  .modal-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .modal-title { font-family: var(--font-head); font-size: 16px; font-weight: 600; }
+  .modal-subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 2px;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { color: var(--text); }
+
+  .modal-body {
+    padding: 1.25rem;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .modal-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+
+  .modal-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 1rem;
+  }
+
+  .meta-item { font-size: 12px; }
+  .meta-label { color: var(--muted); margin-bottom: 2px; }
+  .meta-value { color: var(--text); }
+
+  .modal-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--radius);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-primary { background: var(--accent); color: #0d0d0f; border-color: transparent; }
+  .btn-primary:hover { opacity: 0.85; }
+  .btn-ghost { background: none; color: var(--text); }
+  .btn-ghost:hover { background: var(--bg3); }
+
+  /* PDF EMBED */
+  .pdf-embed {
+    width: 100%;
+    height: 400px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg3);
+    margin-top: 1rem;
+  }
+
+  /* ACTIVE FILTERS */
+  .active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+  .active-filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    padding: 3px 10px 3px 8px;
+    border-radius: 20px;
+    cursor: pointer;
+  }
+  .active-filter-pill:hover { border-color: var(--red); color: var(--red); }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    FSAE <span style="color:var(--muted);font-weight:400;">/ docs</span>
+    <span class="logo-badge">INTERNAL</span>
+  </div>
+  <div class="header-actions">
+    <a href="upload.html" class="btn-upload">+ Upload Doc</a>
+  </div>
+</header>
+
+<div class="layout">
+  <aside>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Subsystem</div>
+      <div id="subsystem-filters"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Year</div>
+      <div id="year-filters"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">File Type</div>
+      <div id="type-filters"></div>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tags</div>
+      <div id="tag-filters"></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">⌕</span>
+        <input type="search" id="search" placeholder="Search documents..." autocomplete="off">
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" id="btn-grid" title="Grid view">⊞</button>
+        <button class="view-btn" id="btn-list" title="List view">☰</button>
+      </div>
+    </div>
+
+    <div id="active-filters" class="active-filters"></div>
+
+    <div class="results-meta" id="results-meta"></div>
+
+    <div id="doc-grid" class="doc-grid"></div>
+    <div id="doc-list" class="hidden">
+      <div class="list-header">
+        <div></div>
+        <div>Title</div>
+        <div>Subsystem</div>
+        <div>Year</div>
+        <div>Date</div>
+      </div>
+      <div id="doc-list-rows"></div>
+    </div>
+
+    <div id="empty-state" class="empty hidden">
+      <div class="empty-title">No documents found</div>
+      <div>Try adjusting your filters or search query</div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" role="dialog">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title"></div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-tags" id="modal-tags"></div>
+      <div class="modal-meta-grid" id="modal-meta"></div>
+      <div id="modal-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <a id="modal-download" class="btn btn-primary" href="#" download>↓ Download</a>
+      <a id="modal-github" class="btn btn-ghost" href="#" target="_blank">View on GitHub ↗</a>
+    </div>
+  </div>
+</div>
+
+<script>
+const REPO_OWNER = 'iitmotorsports';
+const REPO_NAME = 'Documentation-Site';
+const BRANCH = 'main';
+const MANIFEST_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/manifest.json`;
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}/docs/`;
+const GITHUB_BASE = `https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/${BRANCH}/docs/`;
+
+let allDocs = [];
+let fuse = null;
+let activeFilters = { subsystem: null, year: null, type: null, tag: null };
+let viewMode = 'grid';
+
+const typeMeta = {
+  pdf:  { label: 'PDF',      dotClass: 'dot-pdf'  },
+  md:   { label: 'Markdown', dotClass: 'dot-md'   },
+  docx: { label: 'Word',     dotClass: 'dot-docx' },
+  tex:  { label: 'LaTeX',    dotClass: 'dot-tex'  },
+};
+
+function ext(filename) {
+  return filename.split('.').pop().toLowerCase();
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+function typeDot(filename) {
+  const e = ext(filename);
+  const m = typeMeta[e] || { label: e.toUpperCase(), dotClass: '' };
+  return `<span class="type-dot ${m.dotClass}"></span>${m.label}`;
+}
+
+function buildCard(doc) {
+  const url = RAW_BASE + encodeURIComponent(doc.filename);
+  const tags = (doc.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+  return `
+    <div class="doc-card" onclick="openModal(${JSON.stringify(doc).replace(/"/g, '&quot;')})">
+      <div class="card-type">${typeDot(doc.filename)}</div>
+      <div class="card-title">${doc.title}</div>
+      <div class="card-meta">
+        <span>${doc.subsystem || '—'}</span>
+        <span class="card-meta-sep">·</span>
+        <span>${doc.year || '—'}</span>
+      </div>
+      ${tags ? `<div class="card-tags">${tags}</div>` : ''}
+    </div>`;
+}
+
+function buildRow(doc) {
+  const e = ext(doc.filename);
+  const m = typeMeta[e] || { label: e.toUpperCase(), dotClass: '' };
+  return `
+    <div class="doc-row" onclick="openModal(${JSON.stringify(doc).replace(/"/g, '&quot;')})">
+      <span class="type-dot ${m.dotClass}" style="margin:auto;"></span>
+      <div class="card-title">${doc.title}</div>
+      <div style="font-size:12px;color:var(--muted)">${doc.subsystem || '—'}</div>
+      <div style="font-size:12px;color:var(--muted)">${doc.year || '—'}</div>
+      <div style="font-size:12px;color:var(--muted)">${formatDate(doc.date)}</div>
+    </div>`;
+}
+
+function getFiltered() {
+  let results = allDocs;
+  const q = document.getElementById('search').value.trim();
+  if (q && fuse) {
+    results = fuse.search(q).map(r => r.item);
+  }
+  if (activeFilters.subsystem) results = results.filter(d => d.subsystem === activeFilters.subsystem);
+  if (activeFilters.year)      results = results.filter(d => String(d.year) === String(activeFilters.year));
+  if (activeFilters.type)      results = results.filter(d => ext(d.filename) === activeFilters.type);
+  if (activeFilters.tag)       results = results.filter(d => (d.tags || []).includes(activeFilters.tag));
+  return results;
+}
+
+function render() {
+  const docs = getFiltered();
+  const grid = document.getElementById('doc-grid');
+  const listRows = document.getElementById('doc-list-rows');
+  const empty = document.getElementById('empty-state');
+  const meta = document.getElementById('results-meta');
+
+  meta.textContent = `${docs.length} document${docs.length !== 1 ? 's' : ''}`;
+
+  if (docs.length === 0) {
+    grid.innerHTML = '';
+    listRows.innerHTML = '';
+    empty.classList.remove('hidden');
+  } else {
+    empty.classList.add('hidden');
+    grid.innerHTML = docs.map(buildCard).join('');
+    listRows.innerHTML = docs.map(buildRow).join('');
+  }
+
+  renderActiveFilters();
+}
+
+function renderSidebar() {
+  const count = (arr, key) => arr.reduce((acc, d) => {
+    const v = String(d[key] || '');
+    acc[v] = (acc[v] || 0) + 1;
+    return acc;
+  }, {});
+
+  const subsystems = count(allDocs, 'subsystem');
+  const years = count(allDocs, 'year');
+  const types = allDocs.reduce((acc, d) => {
+    const e = ext(d.filename);
+    acc[e] = (acc[e] || 0) + 1;
+    return acc;
+  }, {});
+  const tags = allDocs.reduce((acc, d) => {
+    (d.tags || []).forEach(t => { acc[t] = (acc[t] || 0) + 1; });
+    return acc;
+  }, {});
+
+  const makeFilters = (container, items, filterKey) => {
+    const el = document.getElementById(container);
+    el.innerHTML = Object.entries(items)
+      .sort((a, b) => b[1] - a[1])
+      .map(([val, cnt]) => `
+        <button class="filter-btn ${activeFilters[filterKey] === val ? 'active' : ''}"
+                onclick="toggleFilter('${filterKey}','${val}')">
+          <span>${val}</span>
+          <span class="filter-count">${cnt}</span>
+        </button>`).join('');
+  };
+
+  makeFilters('subsystem-filters', subsystems, 'subsystem');
+  makeFilters('year-filters', years, 'year');
+  makeFilters('type-filters', types, 'type');
+  makeFilters('tag-filters', tags, 'tag');
+}
+
+function renderActiveFilters() {
+  const container = document.getElementById('active-filters');
+  const pills = Object.entries(activeFilters)
+    .filter(([, v]) => v)
+    .map(([k, v]) => `
+      <span class="active-filter-pill" onclick="toggleFilter('${k}','${v}')">
+        <span style="color:var(--muted);font-size:10px">${k}:</span> ${v} ✕
+      </span>`);
+  container.innerHTML = pills.join('');
+}
+
+function toggleFilter(key, val) {
+  activeFilters[key] = activeFilters[key] === val ? null : val;
+  renderSidebar();
+  render();
+}
+
+function openModal(doc) {
+  document.getElementById('modal-title').textContent = doc.title;
+  document.getElementById('modal-subtitle').textContent = `${doc.subsystem || ''} · ${doc.year || ''} · ${doc.author || ''}`;
+
+  const tags = (doc.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
+  document.getElementById('modal-tags').innerHTML = tags;
+
+  const meta = [
+    ['File', doc.filename],
+    ['Date', formatDate(doc.date)],
+    ['Author', doc.author || '—'],
+    ['Type', (typeMeta[ext(doc.filename)] || {}).label || ext(doc.filename).toUpperCase()],
+  ].map(([l, v]) => `<div class="meta-item"><div class="meta-label">${l}</div><div class="meta-value">${v}</div></div>`).join('');
+  document.getElementById('modal-meta').innerHTML = meta;
+
+  const rawUrl = RAW_BASE + encodeURIComponent(doc.filename);
+  document.getElementById('modal-download').href = rawUrl;
+  document.getElementById('modal-github').href = GITHUB_BASE + encodeURIComponent(doc.filename);
+
+  const preview = document.getElementById('modal-preview');
+  const e = ext(doc.filename);
+  if (e === 'pdf') {
+    preview.innerHTML = `<iframe class="pdf-embed" src="${rawUrl}"></iframe>`;
+  } else if (e === 'md') {
+    preview.innerHTML = `<p style="font-size:12px;color:var(--muted);margin-top:1rem">Markdown preview: open on GitHub or download to view.</p>`;
+  } else {
+    preview.innerHTML = '';
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+document.getElementById('modal-close').addEventListener('click', () => {
+  document.getElementById('modal').classList.remove('open');
+  document.getElementById('modal-preview').innerHTML = '';
+});
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+    document.getElementById('modal-preview').innerHTML = '';
+  }
+});
+
+document.getElementById('search').addEventListener('input', render);
+
+document.getElementById('btn-grid').addEventListener('click', () => {
+  viewMode = 'grid';
+  document.getElementById('doc-grid').classList.remove('hidden');
+  document.getElementById('doc-list').classList.add('hidden');
+  document.getElementById('btn-grid').classList.add('active');
+  document.getElementById('btn-list').classList.remove('active');
+});
+document.getElementById('btn-list').addEventListener('click', () => {
+  viewMode = 'list';
+  document.getElementById('doc-grid').classList.add('hidden');
+  document.getElementById('doc-list').classList.remove('hidden');
+  document.getElementById('btn-list').classList.add('active');
+  document.getElementById('btn-grid').classList.remove('active');
+});
+
+async function init() {
+  try {
+    const res = await fetch(MANIFEST_URL);
+    if (!res.ok) throw new Error('No manifest found');
+    allDocs = await res.json();
+  } catch {
+    // Demo data so the page isn't empty during development
+    allDocs = [
+      { filename: "aero-report-2025.pdf", title: "Aerodynamics CFD Report", subsystem: "Aerodynamics", year: 2025, author: "A. Chen", date: "2025-02-10", tags: ["cfd", "downforce", "simulation"] },
+      { filename: "suspension-geometry.pdf", title: "Suspension Geometry Analysis", subsystem: "Suspension", year: 2025, author: "M. Patel", date: "2025-01-22", tags: ["kinematics", "uprights"] },
+      { filename: "engine-map-2024.pdf", title: "Engine Mapping Data", subsystem: "Powertrain", year: 2024, author: "J. Williams", date: "2024-11-05", tags: ["ecu", "dyno"] },
+      { filename: "wiring-harness.md", title: "Wiring Harness Spec", subsystem: "Electronics", year: 2025, author: "S. Kim", date: "2025-03-01", tags: ["can-bus", "harness"] },
+      { filename: "brakes-calcs.tex", title: "Brake System Calculations", subsystem: "Brakes", year: 2024, author: "L. Torres", date: "2024-09-14", tags: ["bias", "pedal-box"] },
+      { filename: "chassis-stress.pdf", title: "Chassis FEA Report", subsystem: "Chassis", year: 2025, author: "R. Singh", date: "2025-02-28", tags: ["fea", "torsional-stiffness"] },
+    ];
+  }
+
+  fuse = new Fuse(allDocs, {
+    keys: ['title', 'subsystem', 'author', 'tags'],
+    threshold: 0.3,
+  });
+
+  renderSidebar();
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

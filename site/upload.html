@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Upload Document — FSAE Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0d0f;
+    --bg2: #141417;
+    --bg3: #1c1c21;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.13);
+    --text: #f0f0ee;
+    --muted: #888885;
+    --accent: #e8ff47;
+    --accent-dark: #b8cc30;
+    --red: #ff4545;
+    --green: #4ade80;
+    --radius: 8px;
+    --font-head: 'Syne', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-mono);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .back-link {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.15s;
+  }
+  .back-link:hover { color: var(--text); }
+
+  .page {
+    max-width: 640px;
+    margin: 3rem auto;
+    padding: 0 1.5rem;
+  }
+
+  .page-title {
+    font-family: var(--font-head);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+
+  .page-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 2.5rem;
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+  }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  input[type="text"],
+  input[type="number"],
+  select,
+  textarea {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--border2); }
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+
+  select { cursor: pointer; }
+  select option { background: var(--bg2); }
+
+  textarea { resize: vertical; min-height: 72px; }
+
+  /* Tag input */
+  .tag-input-wrap {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 6px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    cursor: text;
+    min-height: 40px;
+    transition: border-color 0.15s;
+  }
+  .tag-input-wrap:focus-within { border-color: var(--border2); }
+
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(232,255,71,0.1);
+    color: #c8dd3a;
+    font-size: 12px;
+    padding: 2px 8px 2px 8px;
+    border-radius: 3px;
+  }
+  .tag-pill-remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 0;
+    opacity: 0.7;
+  }
+  .tag-pill-remove:hover { opacity: 1; }
+
+  .tag-text-input {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    outline: none;
+    flex: 1;
+    min-width: 80px;
+    padding: 2px 4px;
+  }
+  .tag-text-input::placeholder { color: var(--muted); }
+
+  /* File drop zone */
+  .dropzone {
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .dropzone:hover, .dropzone.drag-over {
+    border-color: var(--accent);
+    background: rgba(232,255,71,0.03);
+  }
+  .dropzone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .dz-icon { font-size: 28px; margin-bottom: 8px; }
+  .dz-text { font-size: 13px; color: var(--muted); }
+  .dz-text strong { color: var(--text); }
+  .dz-hint { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .file-selected {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-top: 8px;
+  }
+  .file-icon { font-size: 18px; }
+  .file-name { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-size { font-size: 12px; color: var(--muted); }
+  .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
+  .file-remove:hover { color: var(--red); }
+
+  /* Config notice */
+  .config-notice {
+    background: rgba(232,255,71,0.06);
+    border: 1px solid rgba(232,255,71,0.2);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #c8dd3a;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 8px;
+  }
+
+  /* Submit */
+  .submit-wrap { display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background: var(--accent);
+    color: #0d0d0f;
+    border: none;
+    border-radius: var(--radius);
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    letter-spacing: -0.01em;
+  }
+  .btn-submit:hover:not(:disabled) { opacity: 0.85; }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .submit-note { font-size: 12px; color: var(--muted); text-align: center; }
+
+  /* Status */
+  .status {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    font-size: 13px;
+    display: none;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .status.info { display: block; background: var(--bg3); border: 1px solid var(--border2); }
+  .status.success { display: block; background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.25); color: var(--green); }
+  .status.error { display: block; background: rgba(255,69,69,0.08); border: 1px solid rgba(255,69,69,0.25); color: var(--red); }
+
+  .status a { color: inherit; }
+
+  /* Progress */
+  .progress-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .step.done { color: var(--green); }
+  .step.active { color: var(--text); }
+  .step-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .step.done .step-dot { background: var(--green); }
+  .step.active .step-dot { background: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="index.html" class="logo">FSAE <span style="color:var(--muted);font-weight:400">/ docs</span></a>
+  <a href="index.html" class="back-link">← Back to docs</a>
+</header>
+
+<div class="page">
+  <div class="page-title">Upload document</div>
+  <div class="page-sub">This will open a pull request for review before the doc goes live.</div>
+
+  <div id="status" class="status"></div>
+
+  <!-- File -->
+  <div class="form-section">
+    <div class="section-label">File</div>
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="file-input" accept=".pdf,.md,.docx,.tex,.latex">
+      <div class="dz-icon">⬆</div>
+      <div class="dz-text"><strong>Choose file</strong> or drag and drop</div>
+      <div class="dz-hint">PDF, Markdown, Word, LaTeX — max 25 MB</div>
+    </div>
+    <div id="file-selected" style="display:none" class="file-selected">
+      <span class="file-icon" id="file-icon">📄</span>
+      <span class="file-name" id="file-name"></span>
+      <span class="file-size" id="file-size"></span>
+      <button class="file-remove" id="file-remove">✕</button>
+    </div>
+  </div>
+
+  <!-- Metadata -->
+  <div class="form-section">
+    <div class="section-label">Metadata</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label for="title">Document title *</label>
+        <input type="text" id="title" placeholder="e.g. Suspension Geometry Analysis 2025">
+      </div>
+      <div class="form-group">
+        <label for="subsystem">Subsystem *</label>
+        <select id="subsystem">
+          <option value="">Select subsystem…</option>
+          <option>Aerodynamics</option>
+          <option>Brakes</option>
+          <option>Chassis</option>
+          <option>Drivetrain</option>
+          <option>Electronics</option>
+          <option>Engine</option>
+          <option>Ergonomics</option>
+          <option>Powertrain</option>
+          <option>Steering</option>
+          <option>Suspension</option>
+          <option>Tires</option>
+          <option>General</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="year">Year *</label>
+        <input type="number" id="year" placeholder="2025" min="2000" max="2099">
+      </div>
+      <div class="form-group">
+        <label for="author">Author</label>
+        <input type="text" id="author" placeholder="Your name">
+      </div>
+      <div class="form-group">
+        <label for="date">Date</label>
+        <input type="text" id="date" placeholder="YYYY-MM-DD">
+      </div>
+      <div class="form-group full">
+        <label>Tags <span style="color:var(--muted);font-weight:400">(press Enter to add)</span></label>
+        <div class="tag-input-wrap" id="tag-wrap" onclick="document.getElementById('tag-input').focus()">
+          <input type="text" class="tag-text-input" id="tag-input" placeholder="e.g. cfd, simulation, 2025">
+        </div>
+      </div>
+      <div class="form-group full">
+        <label for="description">Description <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+        <textarea id="description" placeholder="Brief description of the document…"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit -->
+  <div class="submit-wrap">
+    <button class="btn-submit" id="btn-submit" disabled>Submit for review</button>
+    <div class="submit-note">A pull request will be opened on GitHub for a team lead to review and merge.</div>
+  </div>
+</div>
+
+<script>
+// ─── CONFIGURE THESE ─────────────────────────────────────────────────────────
+const REPO_OWNER = 'iitmotorsports';
+const REPO_NAME  = 'Documentation-Site';
+const BRANCH     = 'main';
+// GitHub token needs: contents:write, pull-requests:write
+// Store this in a backend or environment variable — do NOT commit it to the repo!
+// For local dev you can paste it here, but remove before committing.
+const GITHUB_TOKEN = 'YOUR_GITHUB_TOKEN';
+// ─────────────────────────────────────────────────────────────────────────────
+
+const API = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}`;
+
+let selectedFile = null;
+let tags = [];
+
+// ── File handling ─────────────────────────────────────────────────────────────
+const fileInput = document.getElementById('file-input');
+const dropzone  = document.getElementById('dropzone');
+
+function fileIcon(name) {
+  const e = name.split('.').pop().toLowerCase();
+  return { pdf: '📕', md: '📝', docx: '📄', tex: '📐', latex: '📐' }[e] || '📄';
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+function setFile(file) {
+  if (!file) return;
+  selectedFile = file;
+  document.getElementById('file-icon').textContent = fileIcon(file.name);
+  document.getElementById('file-name').textContent = file.name;
+  document.getElementById('file-size').textContent = formatSize(file.size);
+  document.getElementById('file-selected').style.display = 'flex';
+  if (!document.getElementById('title').value) {
+    document.getElementById('title').value = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+  }
+  if (!document.getElementById('date').value) {
+    document.getElementById('date').value = new Date().toISOString().split('T')[0];
+  }
+  checkValid();
+}
+
+fileInput.addEventListener('change', e => setFile(e.target.files[0]));
+
+dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', () => dropzone.classList.remove('drag-over'));
+dropzone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropzone.classList.remove('drag-over');
+  setFile(e.dataTransfer.files[0]);
+});
+
+document.getElementById('file-remove').addEventListener('click', () => {
+  selectedFile = null;
+  fileInput.value = '';
+  document.getElementById('file-selected').style.display = 'none';
+  checkValid();
+});
+
+// ── Tag input ─────────────────────────────────────────────────────────────────
+const tagInput = document.getElementById('tag-input');
+const tagWrap  = document.getElementById('tag-wrap');
+
+function renderTags() {
+  const pills = tagWrap.querySelectorAll('.tag-pill');
+  pills.forEach(p => p.remove());
+  tags.forEach((t, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.innerHTML = `${t}<button class="tag-pill-remove" data-i="${i}">×</button>`;
+    tagWrap.insertBefore(pill, tagInput);
+  });
+  tagWrap.querySelectorAll('.tag-pill-remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      tags.splice(parseInt(btn.dataset.i), 1);
+      renderTags();
+    });
+  });
+}
+
+tagInput.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ',') && tagInput.value.trim()) {
+    e.preventDefault();
+    const val = tagInput.value.trim().replace(/,$/, '').toLowerCase().replace(/\s+/g, '-');
+    if (val && !tags.includes(val)) { tags.push(val); renderTags(); }
+    tagInput.value = '';
+  }
+  if (e.key === 'Backspace' && !tagInput.value && tags.length) {
+    tags.pop();
+    renderTags();
+  }
+});
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function checkValid() {
+  const ok = selectedFile &&
+    document.getElementById('title').value.trim() &&
+    document.getElementById('subsystem').value &&
+    document.getElementById('year').value;
+  document.getElementById('btn-submit').disabled = !ok;
+}
+
+['title','subsystem','year','author'].forEach(id => {
+  document.getElementById(id).addEventListener('input', checkValid);
+});
+
+// ── Status helper ─────────────────────────────────────────────────────────────
+function setStatus(type, html) {
+  const el = document.getElementById('status');
+  el.className = `status ${type}`;
+  el.innerHTML = html;
+}
+
+// ── GitHub API helpers ────────────────────────────────────────────────────────
+async function gh(path, method = 'GET', body = null) {
+  const res = await fetch(`${API}${path}`, {
+    method,
+    headers: {
+      Authorization: `Bearer ${GITHUB_TOKEN}`,
+      Accept: 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+    },
+    body: body ? JSON.stringify(body) : null,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `GitHub API error ${res.status}`);
+  }
+  return res.json();
+}
+
+function toBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function slugify(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+document.getElementById('btn-submit').addEventListener('click', async () => {
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+
+  const metadata = {
+    filename: selectedFile.name,
+    title: document.getElementById('title').value.trim(),
+    subsystem: document.getElementById('subsystem').value,
+    year: parseInt(document.getElementById('year').value),
+    author: document.getElementById('author').value.trim() || null,
+    date: document.getElementById('date').value || new Date().toISOString().split('T')[0],
+    tags,
+    description: document.getElementById('description').value.trim() || null,
+  };
+
+  const steps = [
+    { id: 's1', text: 'Reading file…' },
+    { id: 's2', text: 'Fetching current manifest…' },
+    { id: 's3', text: 'Creating branch…' },
+    { id: 's4', text: 'Uploading document…' },
+    { id: 's5', text: 'Updating manifest…' },
+    { id: 's6', text: 'Opening pull request…' },
+  ];
+
+  setStatus('info', `
+    <strong style="color:var(--text)">Submitting…</strong>
+    <div class="progress-steps">
+      ${steps.map(s => `<div class="step" id="${s.id}"><span class="step-dot"></span>${s.text}</div>`).join('')}
+    </div>
+  `);
+
+  function markStep(id, state) {
+    const el = document.getElementById(id);
+    if (el) { el.className = `step ${state}`; }
+  }
+
+  try {
+    markStep('s1', 'active');
+    const fileContent = await toBase64(selectedFile);
+    markStep('s1', 'done');
+
+    markStep('s2', 'active');
+    const { sha: mainSha } = await gh(`/git/ref/heads/${BRANCH}`).then(r => ({ sha: r.object.sha }));
+    let currentManifest = [];
+    let manifestSha = null;
+    try {
+      const manifestFile = await gh(`/contents/manifest.json?ref=${BRANCH}`);
+      manifestSha = manifestFile.sha;
+      currentManifest = JSON.parse(atob(manifestFile.content.replace(/\n/g, '')));
+    } catch { /* manifest doesn't exist yet, start fresh */ }
+    markStep('s2', 'done');
+
+    markStep('s3', 'active');
+    const branchName = `upload/${slugify(metadata.title)}-${Date.now()}`;
+    await gh(`/git/refs`, 'POST', { ref: `refs/heads/${branchName}`, sha: mainSha });
+    markStep('s3', 'done');
+
+    markStep('s4', 'active');
+    await gh(`/contents/docs/${selectedFile.name}`, 'PUT', {
+      message: `docs: add ${selectedFile.name}`,
+      content: fileContent,
+      branch: branchName,
+    });
+    markStep('s4', 'done');
+
+    markStep('s5', 'active');
+    const updatedManifest = [...currentManifest.filter(d => d.filename !== selectedFile.name), metadata];
+    const newManifestContent = btoa(unescape(encodeURIComponent(JSON.stringify(updatedManifest, null, 2))));
+    const manifestBody = {
+      message: `docs: update manifest for ${selectedFile.name}`,
+      content: newManifestContent,
+      branch: branchName,
+    };
+    if (manifestSha) manifestBody.sha = manifestSha;
+
+    const currentBranchManifest = await gh(`/contents/manifest.json?ref=${branchName}`).catch(() => null);
+    if (currentBranchManifest) manifestBody.sha = currentBranchManifest.sha;
+    await gh(`/contents/manifest.json`, 'PUT', manifestBody);
+    markStep('s5', 'done');
+
+    markStep('s6', 'active');
+    const pr = await gh(`/pulls`, 'POST', {
+      title: `📄 Add: ${metadata.title}`,
+      head: branchName,
+      base: BRANCH,
+      body: `## New Document\n\n| Field | Value |\n|---|---|\n| **Title** | ${metadata.title} |\n| **File** | \`${metadata.filename}\` |\n| **Subsystem** | ${metadata.subsystem} |\n| **Year** | ${metadata.year} |\n| **Author** | ${metadata.author || '—'} |\n| **Date** | ${metadata.date} |\n| **Tags** | ${tags.join(', ') || '—'} |\n\n${metadata.description ? `> ${metadata.description}` : ''}\n\n---\n*Submitted via the FSAE Docs upload form.*`,
+    });
+    markStep('s6', 'done');
+
+    setStatus('success', `
+      <strong>PR opened!</strong> A team lead can now review and merge it.<br>
+      <a href="${pr.html_url}" target="_blank" style="text-decoration:underline">View pull request #${pr.number} →</a>
+    `);
+
+  } catch (err) {
+    setStatus('error', `<strong>Error:</strong> ${err.message}`);
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
