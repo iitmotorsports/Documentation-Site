@@ -16,6 +16,11 @@ jobs:
           import json, os, sys
 
           VALID_EXTS = {'.pdf', '.md', '.docx', '.tex', '.latex'}
+          VALID_SUBSYSTEMS = {
+              'Chassis', 'Suspension', 'Driver Interface', 'Aerodynamics',
+              'Powertrain', 'High-Voltage', 'Low-Voltage', 'Software',
+              'Business', 'Media', 'General',
+          }
           REQUIRED = ['filename', 'title', 'subsystem', 'year']
 
           with open('manifest.json') as f:
@@ -28,6 +33,10 @@ jobs:
               for field in REQUIRED:
                   if field not in doc or doc[field] is None or str(doc[field]).strip() == '':
                       errors.append(f"[entry {i}] Missing required field: {field}")
+
+              subsystem = doc.get('subsystem', '')
+              if subsystem and subsystem not in VALID_SUBSYSTEMS:
+                  errors.append(f"[entry {i}] Invalid subsystem: '{subsystem}'")
 
               fname = doc.get('filename', '')
               if fname:

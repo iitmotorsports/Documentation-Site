@@ -10,9 +10,9 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #181415;
-    --bg2: #231F20;
-    --bg3: #2e2829;
+    --bg: #231F20;
+    --bg2: #2d2829;
+    --bg3: #383233;
     --border: rgba(255,255,255,0.08);
     --border2: rgba(255,255,255,0.15);
     --text: #ffffff;
@@ -240,6 +240,51 @@
   .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
   .file-remove:hover { color: var(--red); }
 
+  /* Update toggle */
+  .update-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+  }
+  .update-toggle input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    background: var(--bg2);
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    transition: all 0.15s;
+  }
+  .update-toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .update-toggle input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    color: #fff;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .update-toggle-label {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .existing-doc-select {
+    margin-bottom: 1.5rem;
+    display: none;
+  }
+  .existing-doc-select.visible { display: block; }
+
   /* Config notice */
   .config-notice {
     background: rgba(232,255,71,0.06);
@@ -320,9 +365,9 @@
 <body>
 
 <header>
-  <!-- To use your logo image: drop logo.png into the site/ folder and uncomment the line below -->
-  <!-- <img src="logo.png" alt="IIT Motorsports" style="height:32px;width:auto;"> -->
-  <a href="index.html" class="logo">IIT <span style="color:var(--accent);font-weight:700">Motorsports</span></a>
+  <a href="index.html" class="logo">
+    <img src="IIT_Motorsports_Logo_Transparent_Red_White_Rectangle.svg" alt="IIT Motorsports" style="height:36px;width:auto;">
+  </a>
   <a href="index.html" class="back-link">← Back to docs</a>
 </header>
 
@@ -331,6 +376,20 @@
   <div class="page-sub">This will open a pull request for review before the doc goes live.</div>
 
   <div id="status" class="status"></div>
+
+  <!-- Update toggle -->
+  <label class="update-toggle">
+    <input type="checkbox" id="is-update">
+    <span class="update-toggle-label">This is an update to an existing document</span>
+  </label>
+  <div class="existing-doc-select" id="existing-doc-wrap">
+    <div class="form-group">
+      <label for="existing-doc">Select document to replace *</label>
+      <select id="existing-doc">
+        <option value="">Loading documents…</option>
+      </select>
+    </div>
+  </div>
 
   <!-- File -->
   <div class="form-section">
@@ -360,18 +419,17 @@
       <div class="form-group">
         <label for="subsystem">Subsystem *</label>
         <select id="subsystem">
-          <option value="">Select subsystem…</option>
-          <option>Aerodynamics</option>
-          <option>Brakes</option>
+          <option value="">Select subteam…</option>
           <option>Chassis</option>
-          <option>Drivetrain</option>
-          <option>Electronics</option>
-          <option>Engine</option>
-          <option>Ergonomics</option>
-          <option>Powertrain</option>
-          <option>Steering</option>
           <option>Suspension</option>
-          <option>Tires</option>
+          <option>Driver Interface</option>
+          <option>Aerodynamics</option>
+          <option>Powertrain</option>
+          <option>High-Voltage</option>
+          <option>Low-Voltage</option>
+          <option>Software</option>
+          <option>Business</option>
+          <option>Media</option>
           <option>General</option>
         </select>
       </div>
@@ -421,6 +479,32 @@ const API = `${WORKER_URL}/repos/${REPO_OWNER}/${REPO_NAME}`;
 
 let selectedFile = null;
 let tags = [];
+let manifestDocs = [];
+
+// ── Update toggle ─────────────────────────────────────────────────────────────
+const isUpdateCheckbox = document.getElementById('is-update');
+const existingDocWrap  = document.getElementById('existing-doc-wrap');
+const existingDocSelect = document.getElementById('existing-doc');
+
+async function loadManifest() {
+  try {
+    const manifestFile = await gh(`/contents/manifest.json?ref=${BRANCH}`);
+    manifestDocs = JSON.parse(atob(manifestFile.content.replace(/\n/g, '')));
+    existingDocSelect.innerHTML = '<option value="">Select a document…</option>' +
+      manifestDocs.map(d => `<option value="${d.filename}">${d.title} (${d.filename})</option>`).join('');
+  } catch {
+    existingDocSelect.innerHTML = '<option value="">Could not load documents</option>';
+  }
+}
+
+isUpdateCheckbox.addEventListener('change', () => {
+  const checked = isUpdateCheckbox.checked;
+  existingDocWrap.classList.toggle('visible', checked);
+  if (checked && manifestDocs.length === 0) loadManifest();
+  checkValid();
+});
+
+existingDocSelect.addEventListener('change', checkValid);
 
 // ── File handling ─────────────────────────────────────────────────────────────
 const fileInput = document.getElementById('file-input');
@@ -507,10 +591,12 @@ tagInput.addEventListener('keydown', e => {
 
 // ── Validation ────────────────────────────────────────────────────────────────
 function checkValid() {
+  const isUpdate = isUpdateCheckbox.checked;
   const ok = selectedFile &&
     document.getElementById('title').value.trim() &&
     document.getElementById('subsystem').value &&
-    document.getElementById('year').value;
+    document.getElementById('year').value &&
+    (!isUpdate || existingDocSelect.value);
   document.getElementById('btn-submit').disabled = !ok;
 }
 
@@ -558,6 +644,9 @@ function slugify(str) {
 document.getElementById('btn-submit').addEventListener('click', async () => {
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
+
+  const isUpdate = isUpdateCheckbox.checked;
+  const replacingFilename = isUpdate ? existingDocSelect.value : null;
 
   const metadata = {
     filename: selectedFile.name,
@@ -621,7 +710,10 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
     markStep('s4', 'done');
 
     markStep('s5', 'active');
-    const updatedManifest = [...currentManifest.filter(d => d.filename !== selectedFile.name), metadata];
+    const updatedManifest = [
+      ...currentManifest.filter(d => d.filename !== selectedFile.name && d.filename !== replacingFilename),
+      metadata,
+    ];
     const newManifestContent = btoa(unescape(encodeURIComponent(JSON.stringify(updatedManifest, null, 2))));
     const manifestBody = {
       message: `docs: update manifest for ${selectedFile.name}`,
@@ -637,10 +729,10 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
 
     markStep('s6', 'active');
     const pr = await gh(`/pulls`, 'POST', {
-      title: `📄 Add: ${metadata.title}`,
+      title: isUpdate ? `🔄 Update: ${metadata.title}` : `📄 Add: ${metadata.title}`,
       head: branchName,
       base: BRANCH,
-      body: `## New Document\n\n| Field | Value |\n|---|---|\n| **Title** | ${metadata.title} |\n| **File** | \`${metadata.filename}\` |\n| **Subsystem** | ${metadata.subsystem} |\n| **Year** | ${metadata.year} |\n| **Author** | ${metadata.author || '—'} |\n| **Date** | ${metadata.date} |\n| **Tags** | ${tags.join(', ') || '—'} |\n\n${metadata.description ? `> ${metadata.description}` : ''}\n\n---\n*Submitted via the FSAE Docs upload form.*`,
+      body: `## ${isUpdate ? 'Updated Document' : 'New Document'}\n\n| Field | Value |\n|---|---|\n| **Title** | ${metadata.title} |\n| **File** | \`${metadata.filename}\` |\n${replacingFilename ? `| **Replaces** | \`${replacingFilename}\` |\n` : ''}| **Subsystem** | ${metadata.subsystem} |\n| **Year** | ${metadata.year} |\n| **Author** | ${metadata.author || '—'} |\n| **Date** | ${metadata.date} |\n| **Tags** | ${tags.join(', ') || '—'} |\n\n${metadata.description ? `> ${metadata.description}` : ''}\n\n---\n*Submitted via the IIT Motorsports Docs upload form.*`,
     });
     markStep('s6', 'done');
 

@@ -11,9 +11,9 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #181415;
-    --bg2: #231F20;
-    --bg3: #2e2829;
+    --bg: #231F20;
+    --bg2: #2d2829;
+    --bg3: #383233;
     --border: rgba(255,255,255,0.08);
     --border2: rgba(255,255,255,0.15);
     --text: #ffffff;
@@ -487,9 +487,7 @@
 
 <header>
   <div class="logo">
-    <!-- To use your logo image: drop logo.png into the site/ folder and uncomment the line below -->
-    <!-- <img src="logo.png" alt="IIT Motorsports" style="height:32px;width:auto;"> -->
-    IIT <span style="color:var(--accent);">Motorsports</span>
+    <img src="IIT_Motorsports_Logo_Transparent_Red_White_Rectangle.svg" alt="IIT Motorsports" style="height:36px;width:auto;">
     <span class="logo-badge">DOCS</span>
   </div>
   <div class="header-actions">
@@ -798,10 +796,10 @@ async function init() {
     allDocs = [
       { filename: "aero-report-2025.pdf", title: "Aerodynamics CFD Report", subsystem: "Aerodynamics", year: 2025, author: "A. Chen", date: "2025-02-10", tags: ["cfd", "downforce", "simulation"] },
       { filename: "suspension-geometry.pdf", title: "Suspension Geometry Analysis", subsystem: "Suspension", year: 2025, author: "M. Patel", date: "2025-01-22", tags: ["kinematics", "uprights"] },
-      { filename: "engine-map-2024.pdf", title: "Engine Mapping Data", subsystem: "Powertrain", year: 2024, author: "J. Williams", date: "2024-11-05", tags: ["ecu", "dyno"] },
-      { filename: "wiring-harness.md", title: "Wiring Harness Spec", subsystem: "Electronics", year: 2025, author: "S. Kim", date: "2025-03-01", tags: ["can-bus", "harness"] },
-      { filename: "brakes-calcs.tex", title: "Brake System Calculations", subsystem: "Brakes", year: 2024, author: "L. Torres", date: "2024-09-14", tags: ["bias", "pedal-box"] },
-      { filename: "chassis-stress.pdf", title: "Chassis FEA Report", subsystem: "Chassis", year: 2025, author: "R. Singh", date: "2025-02-28", tags: ["fea", "torsional-stiffness"] },
+      { filename: "powertrain-map-2024.pdf", title: "Powertrain Mapping Data", subsystem: "Powertrain", year: 2024, author: "J. Williams", date: "2024-11-05", tags: ["ecu", "dyno"] },
+      { filename: "lv-harness.md", title: "Low-Voltage Harness Spec", subsystem: "Low-Voltage", year: 2025, author: "S. Kim", date: "2025-03-01", tags: ["can-bus", "harness"] },
+      { filename: "hv-safety.pdf", title: "HV Safety & Tractive System Overview", subsystem: "High-Voltage", year: 2025, author: "L. Torres", date: "2025-01-10", tags: ["accumulator", "tractive-system"] },
+      { filename: "chassis-fea.pdf", title: "Chassis FEA Report", subsystem: "Chassis", year: 2025, author: "R. Singh", date: "2025-02-28", tags: ["fea", "torsional-stiffness"] },
     ];
   }
 
