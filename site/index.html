@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FSAE Docs</title>
+<title>IIT Motorsports Docs</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Jost:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0d0d0f;
-    --bg2: #141417;
-    --bg3: #1c1c21;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --text: #f0f0ee;
-    --muted: #888885;
-    --accent: #e8ff47;
+    --bg: #181415;
+    --bg2: #231F20;
+    --bg3: #2e2829;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.15);
+    --text: #ffffff;
+    --muted: #6F7377;
+    --accent: #CE1126;
     --accent2: #ff6b35;
-    --tag-bg: rgba(232,255,71,0.1);
-    --tag-text: #c8dd3a;
-    --red: #ff4545;
+    --tag-bg: rgba(206,17,38,0.15);
+    --tag-text: #ff8080;
+    --red: #CE1126;
     --blue: #4a9eff;
     --radius: 8px;
-    --font-head: 'Syne', sans-serif;
+    --font-head: 'Jost', sans-serif;
     --font-mono: 'DM Mono', monospace;
   }
 
@@ -64,7 +64,7 @@
 
   .logo-badge {
     background: var(--accent);
-    color: #0d0d0f;
+    color: #ffffff;
     font-size: 10px;
     font-weight: 700;
     font-family: var(--font-mono);
@@ -81,7 +81,7 @@
 
   .btn-upload {
     background: var(--accent);
-    color: #0d0d0f;
+    color: #ffffff;
     border: none;
     padding: 7px 16px;
     border-radius: var(--radius);
@@ -444,7 +444,7 @@
     align-items: center;
     gap: 6px;
   }
-  .btn-primary { background: var(--accent); color: #0d0d0f; border-color: transparent; }
+  .btn-primary { background: var(--accent); color: #ffffff; border-color: transparent; }
   .btn-primary:hover { opacity: 0.85; }
   .btn-ghost { background: none; color: var(--text); }
   .btn-ghost:hover { background: var(--bg3); }
@@ -487,8 +487,10 @@
 
 <header>
   <div class="logo">
-    FSAE <span style="color:var(--muted);font-weight:400;">/ docs</span>
-    <span class="logo-badge">INTERNAL</span>
+    <!-- To use your logo image: drop logo.png into the site/ folder and uncomment the line below -->
+    <!-- <img src="logo.png" alt="IIT Motorsports" style="height:32px;width:auto;"> -->
+    IIT <span style="color:var(--accent);">Motorsports</span>
+    <span class="logo-badge">DOCS</span>
   </div>
   <div class="header-actions">
     <a href="upload.html" class="btn-upload">+ Upload Doc</a>
