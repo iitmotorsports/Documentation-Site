@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "filename": "Showcase.pdf",
+    "title": "Showcase",
+    "subsystem": "Business",
+    "year": 2022,
+    "author": "Noah Husby",
+    "date": "2026-04-29",
+    "tags": [
+      "style-guide",
+      "colors",
+      "fonts"
+    ],
+    "description": null
+  }
+]
