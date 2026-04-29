@@ -1,12 +1,28 @@
 [
   {
     "filename": "example-document.pdf",
-    "title": "Example Document — Delete Me",
+    "title": "Example Document â Delete Me",
     "subsystem": "General",
     "year": 2025,
     "author": "FSAE Team",
     "date": "2025-01-01",
-    "tags": ["example"],
+    "tags": [
+      "example"
+    ],
     "description": "Placeholder entry. Replace with real documents."
+  },
+  {
+    "filename": "Showcase.pdf",
+    "title": "Showcase",
+    "subsystem": "Business",
+    "year": 2022,
+    "author": "Noah Husby",
+    "date": "2026-04-29",
+    "tags": [
+      "style-guide",
+      "colors",
+      "fonts"
+    ],
+    "description": null
   }
 ]
