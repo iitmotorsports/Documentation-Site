@@ -748,7 +748,8 @@ function openModal(doc) {
   const preview = document.getElementById('modal-preview');
   const e = ext(doc.filename);
   if (e === 'pdf') {
-    preview.innerHTML = `<iframe class="pdf-embed" src="${rawUrl}"></iframe>`;
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(rawUrl)}&embedded=true`;
+    preview.innerHTML = `<iframe class="pdf-embed" src="${viewerUrl}"></iframe>`;
   } else if (e === 'md') {
     preview.innerHTML = `<p style="font-size:12px;color:var(--muted);margin-top:1rem">Markdown preview: open on GitHub or download to view.</p>`;
   } else {
