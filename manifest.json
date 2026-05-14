@@ -12,5 +12,28 @@
       "fonts"
     ],
     "description": null
+  },
+  {
+    "filename": "IPRO_Final_Design_Report-3.pdf",
+    "title": "IPRO Final Design Report",
+    "subsystem": "High-Voltage",
+    "year": 2026,
+    "author": [
+      "Aidan Baros",
+      "Adam Read",
+      "Lillian Imley"
+    ],
+    "date": "2026-05-14",
+    "tags": [
+      "tractive-battery",
+      "simulation",
+      "clad",
+      "battery-testing",
+      "aero-simulation",
+      "thermal-simulation",
+      "data-generation",
+      "pcb"
+    ],
+    "description": null
   }
 ]
