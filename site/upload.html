@@ -700,7 +700,7 @@ function checkValid() {
   document.getElementById('btn-submit').disabled = !ok;
 }
 
-['title','subsystem','year','author'].forEach(id => {
+['title','subsystem','year'].forEach(id => {
   document.getElementById(id).addEventListener('input', checkValid);
 });
 
