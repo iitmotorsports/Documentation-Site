@@ -582,7 +582,7 @@ const GITHUB_BASE = `https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/${BRANCH
 
 let allDocs = [];
 let fuse = null;
-let activeFilters = { subsystem: null, year: null, type: null, tag: null };
+let activeFilters = { subsystem: null, year: null, type: null, tags: [] };
 let viewMode = 'grid';
 
 const typeMeta = {
@@ -594,6 +594,11 @@ const typeMeta = {
 
 function ext(filename) {
   return filename.split('.').pop().toLowerCase();
+}
+
+function formatAuthors(author) {
+  if (!author) return '—';
+  return Array.isArray(author) ? author.join(', ') : author;
 }
 
 function formatDate(dateStr) {
@@ -643,10 +648,10 @@ function getFiltered() {
   if (q && fuse) {
     results = fuse.search(q).map(r => r.item);
   }
-  if (activeFilters.subsystem) results = results.filter(d => d.subsystem === activeFilters.subsystem);
-  if (activeFilters.year)      results = results.filter(d => String(d.year) === String(activeFilters.year));
-  if (activeFilters.type)      results = results.filter(d => ext(d.filename) === activeFilters.type);
-  if (activeFilters.tag)       results = results.filter(d => (d.tags || []).includes(activeFilters.tag));
+  if (activeFilters.subsystem)       results = results.filter(d => d.subsystem === activeFilters.subsystem);
+  if (activeFilters.year)            results = results.filter(d => String(d.year) === String(activeFilters.year));
+  if (activeFilters.type)            results = results.filter(d => ext(d.filename) === activeFilters.type);
+  if (activeFilters.tags.length)     results = results.filter(d => activeFilters.tags.some(t => (d.tags || []).includes(t)));
   return results;
 }
 
@@ -695,12 +700,17 @@ function renderSidebar() {
     const el = document.getElementById(container);
     el.innerHTML = Object.entries(items)
       .sort((a, b) => b[1] - a[1])
-      .map(([val, cnt]) => `
-        <button class="filter-btn ${activeFilters[filterKey] === val ? 'active' : ''}"
+      .map(([val, cnt]) => {
+        const isActive = filterKey === 'tags'
+          ? activeFilters.tags.includes(val)
+          : activeFilters[filterKey] === val;
+        return `
+        <button class="filter-btn ${isActive ? 'active' : ''}"
                 onclick="toggleFilter('${filterKey}','${val}')">
           <span>${val}</span>
           <span class="filter-count">${cnt}</span>
-        </button>`).join('');
+        </button>`;
+      }).join('');
   };
 
   makeFilters('subsystem-filters', subsystems, 'subsystem');
@@ -711,24 +721,35 @@ function renderSidebar() {
 
 function renderActiveFilters() {
   const container = document.getElementById('active-filters');
-  const pills = Object.entries(activeFilters)
-    .filter(([, v]) => v)
-    .map(([k, v]) => `
-      <span class="active-filter-pill" onclick="toggleFilter('${k}','${v}')">
-        <span style="color:var(--muted);font-size:10px">${k}:</span> ${v} ✕
+  const pills = [];
+  ['subsystem','year','type'].forEach(k => {
+    if (activeFilters[k]) pills.push(`
+      <span class="active-filter-pill" onclick="toggleFilter('${k}','${activeFilters[k]}')">
+        <span style="color:var(--muted);font-size:10px">${k}:</span> ${activeFilters[k]} ✕
       </span>`);
+  });
+  activeFilters.tags.forEach(t => pills.push(`
+    <span class="active-filter-pill" onclick="toggleFilter('tags','${t}')">
+      <span style="color:var(--muted);font-size:10px">tag:</span> ${t} ✕
+    </span>`));
   container.innerHTML = pills.join('');
 }
 
 function toggleFilter(key, val) {
-  activeFilters[key] = activeFilters[key] === val ? null : val;
+  if (key === 'tags') {
+    const idx = activeFilters.tags.indexOf(val);
+    if (idx === -1) activeFilters.tags.push(val);
+    else activeFilters.tags.splice(idx, 1);
+  } else {
+    activeFilters[key] = activeFilters[key] === val ? null : val;
+  }
   renderSidebar();
   render();
 }
 
 function openModal(doc) {
   document.getElementById('modal-title').textContent = doc.title;
-  document.getElementById('modal-subtitle').textContent = `${doc.subsystem || ''} · ${doc.year || ''} · ${doc.author || ''}`;
+  document.getElementById('modal-subtitle').textContent = `${doc.subsystem || ''} · ${doc.year || ''} · ${formatAuthors(doc.author)}`;
 
   const tags = (doc.tags || []).map(t => `<span class="tag">${t}</span>`).join('');
   document.getElementById('modal-tags').innerHTML = tags;
@@ -736,7 +757,7 @@ function openModal(doc) {
   const meta = [
     ['File', doc.filename],
     ['Date', formatDate(doc.date)],
-    ['Author', doc.author || '—'],
+    ['Author', formatAuthors(doc.author)],
     ['Type', (typeMeta[ext(doc.filename)] || {}).label || ext(doc.filename).toUpperCase()],
   ].map(([l, v]) => `<div class="meta-item"><div class="meta-label">${l}</div><div class="meta-value">${v}</div></div>`).join('');
   document.getElementById('modal-meta').innerHTML = meta;

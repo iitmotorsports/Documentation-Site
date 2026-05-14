@@ -240,6 +240,43 @@
   .file-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 16px; }
   .file-remove:hover { color: var(--red); }
 
+  /* How it works */
+  .how-it-works {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+  .how-title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .how-steps {
+    padding-left: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 0.75rem;
+  }
+  .how-steps li { padding-left: 4px; }
+  .how-steps strong { color: var(--text); }
+  .how-note {
+    font-size: 12px;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    padding-top: 0.75rem;
+    font-style: italic;
+  }
+
   /* Update toggle */
   .update-toggle {
     display: flex;
@@ -375,6 +412,18 @@
   <div class="page-title">Upload document</div>
   <div class="page-sub">This will open a pull request for review before the doc goes live.</div>
 
+  <!-- How it works -->
+  <div class="how-it-works">
+    <div class="how-title">How it works</div>
+    <ol class="how-steps">
+      <li><strong>Fill in the metadata</strong> — give your document a title, select your subteam, and add the year. Author, date, tags, and description are optional but helpful.</li>
+      <li><strong>Upload your file</strong> — drag and drop or click to browse. Supported formats: PDF, Markdown, Word, LaTeX.</li>
+      <li><strong>Submit for review</strong> — this opens a pull request on GitHub. Nothing goes live yet.</li>
+      <li><strong>A team lead reviews and merges the PR</strong> — once merged, the document automatically appears on the docs site within a minute.</li>
+    </ol>
+    <div class="how-note">Updating an existing doc? Check the box below and select the document you're replacing — the form will pre-fill with its current info.</div>
+  </div>
+
   <div id="status" class="status"></div>
 
   <!-- Update toggle -->
@@ -437,9 +486,11 @@
         <label for="year">Year *</label>
         <input type="number" id="year" placeholder="2025" min="2000" max="2099">
       </div>
-      <div class="form-group">
-        <label for="author">Author</label>
-        <input type="text" id="author" placeholder="Your name">
+      <div class="form-group full">
+        <label>Authors <span style="color:var(--muted);font-weight:400">(press Enter to add)</span></label>
+        <div class="tag-input-wrap" id="author-wrap" onclick="document.getElementById('author-input').focus()">
+          <input type="text" class="tag-text-input" id="author-input" placeholder="e.g. Jane Smith">
+        </div>
       </div>
       <div class="form-group">
         <label for="date">Date</label>
@@ -479,6 +530,7 @@ const API = `${WORKER_URL}/repos/${REPO_OWNER}/${REPO_NAME}`;
 
 let selectedFile = null;
 let tags = [];
+let authors = [];
 let manifestDocs = [];
 
 // ── Update toggle ─────────────────────────────────────────────────────────────
@@ -510,11 +562,12 @@ existingDocSelect.addEventListener('change', () => {
     document.getElementById('title').value       = selected.title || '';
     document.getElementById('subsystem').value   = selected.subsystem || '';
     document.getElementById('year').value        = selected.year || '';
-    document.getElementById('author').value      = selected.author || '';
     document.getElementById('date').value        = selected.date || '';
     document.getElementById('description').value = selected.description || '';
     tags = Array.isArray(selected.tags) ? [...selected.tags] : [];
     renderTags();
+    authors = Array.isArray(selected.author) ? [...selected.author] : (selected.author ? [selected.author] : []);
+    renderAuthors();
   }
   checkValid();
 });
@@ -565,6 +618,40 @@ document.getElementById('file-remove').addEventListener('click', () => {
   fileInput.value = '';
   document.getElementById('file-selected').style.display = 'none';
   checkValid();
+});
+
+// ── Author input ──────────────────────────────────────────────────────────────
+const authorInput = document.getElementById('author-input');
+const authorWrap  = document.getElementById('author-wrap');
+
+function renderAuthors() {
+  authorWrap.querySelectorAll('.tag-pill').forEach(p => p.remove());
+  authors.forEach((a, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'tag-pill';
+    pill.innerHTML = `${a}<button class="tag-pill-remove" data-i="${i}">×</button>`;
+    authorWrap.insertBefore(pill, authorInput);
+  });
+  authorWrap.querySelectorAll('.tag-pill-remove').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      authors.splice(parseInt(btn.dataset.i), 1);
+      renderAuthors();
+    });
+  });
+}
+
+authorInput.addEventListener('keydown', e => {
+  if ((e.key === 'Enter' || e.key === ',') && authorInput.value.trim()) {
+    e.preventDefault();
+    const val = authorInput.value.trim().replace(/,$/, '');
+    if (val && !authors.includes(val)) { authors.push(val); renderAuthors(); }
+    authorInput.value = '';
+  }
+  if (e.key === 'Backspace' && !authorInput.value && authors.length) {
+    authors.pop();
+    renderAuthors();
+  }
 });
 
 // ── Tag input ─────────────────────────────────────────────────────────────────
@@ -666,7 +753,7 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
     title: document.getElementById('title').value.trim(),
     subsystem: document.getElementById('subsystem').value,
     year: parseInt(document.getElementById('year').value),
-    author: document.getElementById('author').value.trim() || null,
+    author: authors.length ? authors : null,
     date: document.getElementById('date').value || new Date().toISOString().split('T')[0],
     tags,
     description: document.getElementById('description').value.trim() || null,
@@ -745,7 +832,7 @@ document.getElementById('btn-submit').addEventListener('click', async () => {
       title: isUpdate ? `🔄 Update: ${metadata.title}` : `📄 Add: ${metadata.title}`,
       head: branchName,
       base: BRANCH,
-      body: `## ${isUpdate ? 'Updated Document' : 'New Document'}\n\n| Field | Value |\n|---|---|\n| **Title** | ${metadata.title} |\n| **File** | \`${metadata.filename}\` |\n${replacingFilename ? `| **Replaces** | \`${replacingFilename}\` |\n` : ''}| **Subsystem** | ${metadata.subsystem} |\n| **Year** | ${metadata.year} |\n| **Author** | ${metadata.author || '—'} |\n| **Date** | ${metadata.date} |\n| **Tags** | ${tags.join(', ') || '—'} |\n\n${metadata.description ? `> ${metadata.description}` : ''}\n\n---\n*Submitted via the IIT Motorsports Docs upload form.*`,
+      body: `## ${isUpdate ? 'Updated Document' : 'New Document'}\n\n| Field | Value |\n|---|---|\n| **Title** | ${metadata.title} |\n| **File** | \`${metadata.filename}\` |\n${replacingFilename ? `| **Replaces** | \`${replacingFilename}\` |\n` : ''}| **Subsystem** | ${metadata.subsystem} |\n| **Year** | ${metadata.year} |\n| **Author** | ${Array.isArray(metadata.author) ? metadata.author.join(', ') : (metadata.author || '—')} |\n| **Date** | ${metadata.date} |\n| **Tags** | ${tags.join(', ') || '—'} |\n\n${metadata.description ? `> ${metadata.description}` : ''}\n\n---\n*Submitted via the IIT Motorsports Docs upload form.*`,
     });
     markStep('s6', 'done');
 
